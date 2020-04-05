@@ -11,7 +11,29 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @movies = Movie.all
+    @all_ratings = Movie.ratings
+    if (params[:ratings] == nil  && session[:ratings] == nil)
+      session[:ratings] = {"G"=>1, "PG"=>1, "PG-13"=>1, "R"=>1}
+    elsif params[:ratings] == nil
+      params[:ratings] = session[:ratings]
+    else
+      session[:ratings] = params[:ratings]
+    end
+    if params[:sort] == nil
+      params[:sort] = session[:sort]
+    end
+    
+    @movies = Movie.with_ratings(session[:ratings].keys)
+    
+    if params[:sort] == "title"
+      session[:sort] = params[:sort]
+      @movies = @movies.order(title: :asc)
+      @title_header = "hilite"
+    elsif params[:sort] == "date"
+      session[:sort] = params[:sort]
+      @movies = @movies.order(release_date: :asc)
+      @release_date_header = "hilite"
+    end
   end
 
   def new
